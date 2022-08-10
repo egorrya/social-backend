@@ -40,10 +40,12 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
 
 routes(app);
 
-app.listen(process.env.PORT || 4444, (err) => {
+const port = process.env.PORT || 4444;
+
+app.listen(port, (err) => {
   if (err) {
     return console.log(err);
   }
 
-  console.log('Server is OK');
+  console.log(`Server listening on port: ${port}`);
 });
