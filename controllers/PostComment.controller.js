@@ -2,9 +2,11 @@ import PostModel from '../models/Post.model.js';
 import PostCommentModel from '../models/PostComment.model.js';
 
 export const getAll = async (req, res) => {
-  const postId = req.params.id;
-
   try {
+    const postId = req.params.id;
+    const limit = req.body.limit || 20;
+    const page = req.body.page || 1;
+
     const comments = await PostCommentModel.find({ post_id: postId })
       .populate({
         path: 'user',
@@ -13,14 +15,22 @@ export const getAll = async (req, res) => {
         },
         select: '-passwordHash',
       })
+      .limit(limit)
+      .skip(limit * (page - 1))
       .exec();
 
-    res.json(comments);
+    res.json({
+      status: 'success',
+      data: comments,
+      count: comments.length,
+      page,
+      limit,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось получить комментарии',
+      message: 'Unable to get comments',
     });
   }
 };
@@ -54,12 +64,15 @@ export const create = async (req, res) => {
       }
     );
 
-    res.json(comment);
+    res.json({
+      status: 'success',
+      data: comment,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось создать комментарий',
+      message: 'Unable to create the comment',
     });
   }
 };
@@ -90,7 +103,7 @@ export const remove = async (req, res) => {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Comment not removed',
+      message: 'Unable to remove a comment',
     });
   }
 };

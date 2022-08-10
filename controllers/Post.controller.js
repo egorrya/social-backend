@@ -3,6 +3,9 @@ import PostModel from '../models/Post.model.js';
 
 export const getAll = async (req, res) => {
   try {
+    const limit = req.body.limit || 20;
+    const page = req.body.page || 1;
+
     const posts = await PostModel.find()
       .populate({
         path: 'user',
@@ -11,14 +14,22 @@ export const getAll = async (req, res) => {
         },
         select: '-passwordHash',
       })
+      .limit(limit)
+      .skip(limit * (page - 1))
       .exec();
 
-    res.json(posts);
+    res.json({
+      status: 'success',
+      data: posts,
+      count: posts.length,
+      page,
+      limit,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось получить статьи',
+      message: 'Unable to get posts',
     });
   }
 };
@@ -36,16 +47,19 @@ export const getOne = async (req, res) => {
           console.log(err);
           return res
             .status(500)
-            .json({ status: 'error', message: 'Не удалось вернуть статью' });
+            .json({ status: 'error', message: 'Unable to get post' });
         }
 
         if (!doc) {
           return res
             .status(404)
-            .json({ status: 'error', message: 'Статья не найдена' });
+            .json({ status: 'error', message: 'Unable to get post' });
         }
 
-        res.json(doc);
+        res.json({
+          status: 'success',
+          data: doc,
+        });
       }
     ).populate({
       path: 'user',
@@ -58,7 +72,7 @@ export const getOne = async (req, res) => {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось получить статьи',
+      message: 'Unable to get posts',
     });
   }
 };
@@ -75,13 +89,13 @@ export const remove = async (req, res) => {
         if (err) {
           console.log(err);
           return res.status(500).json({
-            message: 'Не удалось удалить статью',
+            message: 'Unable to delete posts',
           });
         }
 
         if (!doc) {
           return res.status(404).json({
-            message: 'Статья не найдена',
+            message: 'Unable to get post',
           });
         }
 
@@ -94,7 +108,7 @@ export const remove = async (req, res) => {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось получить статьи',
+      message: 'Unable to get posts',
     });
   }
 };
@@ -117,12 +131,15 @@ export const create = async (req, res) => {
       })
     );
 
-    res.json(post);
+    res.json({
+      status: 'success',
+      data: post,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось создать статью',
+      message: 'Unable to get posts',
     });
   }
 };
@@ -142,14 +159,23 @@ export const update = async (req, res) => {
       }
     );
 
+    const post = await PostModel.findById(postId).populate({
+      path: 'user',
+      match: {
+        active: true,
+      },
+      select: '-passwordHash',
+    });
+
     res.json({
       status: 'success',
+      data: post,
     });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Не удалось обновить статью',
+      message: 'Unable to update posts',
     });
   }
 };
@@ -208,7 +234,7 @@ export const toggleLike = async (req, res) => {
       .catch((err) => {
         res.status(500).json({
           status: 'error',
-          message: 'Error. Maybe you there is no such post',
+          message: 'Error. Maybe there is no such post',
         });
       });
   } catch (error) {

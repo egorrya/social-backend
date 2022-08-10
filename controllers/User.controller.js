@@ -30,12 +30,11 @@ export const register = async (req, res) => {
 
     const { passwordHash, ...userData } = user._doc;
 
-    res.json({ ...userData, token });
+    res.json({ status: 'success', data: { ...userData, token } });
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      error,
-      message: 'Не удалось зарегистрироваться',
+      message: 'Unable to register',
     });
   }
 };
@@ -47,8 +46,7 @@ export const login = async (req, res) => {
     if (!user)
       return res.status(404).json({
         status: 'error',
-        error,
-        message: 'Неверный логин или пароль',
+        message: 'Wrong login or password',
       });
 
     const isValidPass = await bcrypt.compare(
@@ -59,8 +57,7 @@ export const login = async (req, res) => {
     if (!isValidPass)
       return res.status(400).json({
         status: 'error',
-        error,
-        message: 'Неверный логин или пароль',
+        message: 'Wrong login or password',
       });
 
     const token = jwt.sign(
@@ -73,12 +70,12 @@ export const login = async (req, res) => {
 
     const { passwordHash, ...userData } = user._doc;
 
-    res.json({ ...userData, token });
+    res.json({ status: 'success', data: { ...userData, token } });
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      error,
-      message: 'Не удалось зарегистрироваться',
+
+      message: 'Unable to register',
     });
   }
 };
@@ -89,7 +86,7 @@ export const getMe = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        message: 'Пользователь не найден',
+        message: 'User not found',
       });
     }
 
@@ -102,19 +99,28 @@ export const getMe = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      error,
-      message: 'Нет доступа',
+      message: 'No access',
     });
   }
 };
 
 export const getAll = async (req, res) => {
   try {
-    const users = await UserModel.find().select('-passwordHash').exec();
+    const limit = req.body.limit || 20;
+    const page = req.body.page || 1;
+
+    const users = await UserModel.find()
+      .select('-passwordHash')
+      .limit(limit)
+      .skip(limit * (page - 1))
+      .exec();
 
     res.json({
       status: 'success',
       data: users,
+      count: users.length,
+      limit,
+      page,
     });
   } catch (error) {
     res.status(400).json({
@@ -136,13 +142,13 @@ export const getOne = async (req, res) => {
         if (err) {
           console.log(err);
           return res.status(500).json({
-            message: 'Не удалось вернуть пользователя',
+            message: 'Unable to get user',
           });
         }
 
         if (!doc) {
           return res.status(404).json({
-            message: 'Пользователь не найден',
+            message: 'User not found',
           });
         }
 
