@@ -115,12 +115,17 @@ export const getAll = async (req, res) => {
       .skip(limit * (page - 1))
       .exec();
 
+    const count = await UserModel.find().count();
+    const lastPage = Math.ceil(count / limit);
+
     res.json({
       status: 'success',
-      data: users,
+
       count: users.length,
       limit,
       page,
+      last_page: lastPage,
+      data: users,
     });
   } catch (error) {
     res.status(400).json({

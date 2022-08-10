@@ -18,12 +18,17 @@ export const getAll = async (req, res) => {
       .skip(limit * (page - 1))
       .exec();
 
+    const count = await PostModel.find().count();
+    const lastPage = Math.ceil(count / limit);
+
     res.json({
       status: 'success',
-      data: posts,
-      count: posts.length,
+
+      count,
       page,
       limit,
+      last_page: lastPage,
+      data: posts,
     });
   } catch (err) {
     console.log(err);
