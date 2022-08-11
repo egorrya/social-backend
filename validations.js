@@ -17,6 +17,7 @@ export const registerValidation = [
     min: 1,
   }),
   body('avatarUrl', 'Not valid avatar url').optional().isURL(),
+  body('backgroundUrl', 'Not valid background url').optional().isURL(),
 ];
 
 export const postCreateValidation = [

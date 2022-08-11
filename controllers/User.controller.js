@@ -99,6 +99,80 @@ export const login = async (req, res) => {
   }
 };
 
+export const changeProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const userInitialData = await UserModel.findById(userId);
+    const username = req.body.username || userInitialData.username;
+    const fullName = req.body.fullName || userInitialData.fullName;
+    const avatarUrl = req.body.avatarUrl || userInitialData.avatarUrl;
+    const backgroundUrl =
+      req.body.backgroundUrl || userInitialData.backgroundUrl;
+    const email = req.body.email || userInitialData.email;
+
+    const password = req.body.password;
+    const salt = await bcrypt.genSalt(10);
+    const hash = password ? await bcrypt.hash(password, salt) : password;
+
+    const isEmailExist = await UserModel.find({ email });
+    const isUsernameExist = await UserModel.find({ username });
+
+    if (
+      req.body.email &&
+      isEmailExist &&
+      Object.keys(isEmailExist).length > 0
+    ) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email already taken',
+      });
+    }
+
+    if (
+      req.body.username &&
+      isUsernameExist &&
+      Object.keys(isUsernameExist).length > 0
+    ) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Username already taken',
+      });
+    }
+
+    await UserModel.updateOne(
+      {
+        _id: userId,
+      },
+      {
+        fullName,
+        username,
+        avatarUrl,
+        backgroundUrl,
+        email,
+        passwordHash: hash,
+      }
+    );
+
+    const user = await UserModel.findById(userId).select('-passwordHash');
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+      },
+      process.env.SECRET_KEY,
+      { expiresIn: '30d' }
+    );
+
+    res.json({ status: 'success', data: { ...user._doc, token } });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Profile did not change',
+    });
+  }
+};
+
 export const getMe = async (req, res) => {
   try {
     const user = await UserModel.findById(req.userId);
