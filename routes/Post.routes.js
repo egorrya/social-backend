@@ -25,6 +25,12 @@ router.get(
   handleValidationErrors,
   PostController.feed
 );
+router.get(
+  '/user-posts',
+  pageAndLimitValidation,
+  handleValidationErrors,
+  PostController.userPosts
+);
 router.get('/:id', PostController.one);
 router.post(
   '/',
