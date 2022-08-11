@@ -1,4 +1,5 @@
-import { body } from 'express-validator';
+import { body, check } from 'express-validator';
+import UserModel from './models/User.model.js';
 
 export const loginValidation = [
   body('email', 'Not valid email format').isEmail(),

@@ -5,16 +5,35 @@ import UserModel from '../models/User.model.js';
 
 export const register = async (req, res) => {
   try {
+    const username = req.body.username;
+    const email = req.body.email;
     const password = req.body.password;
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
+    const isEmailExist = await UserModel.find({ email });
+    const isUsernameExist = await UserModel.find({ username });
+
+    if (isEmailExist && Object.keys(isEmailExist).length > 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email already taken',
+      });
+    }
+
+    if (isUsernameExist && Object.keys(isUsernameExist).length > 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Username already taken',
+      });
+    }
+
     const doc = new UserModel({
       fullName: req.body.fullName,
-      username: req.body.username,
+      username,
       avatarUrl: req.body.avatarUrl,
 
-      email: req.body.email,
+      email,
       passwordHash: hash,
     });
 
