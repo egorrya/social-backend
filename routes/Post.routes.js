@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { checkAuth, handleValidationErrors } from '../utils/index.js';
 import {
   commentCreateValidation,
+  pageAndLimitValidation,
   postCreateValidation,
 } from '../validations.js';
 
@@ -11,8 +12,20 @@ import * as PostCommentController from './../controllers/PostComment.controller.
 const router = Router();
 
 // Posts
-router.get('/', PostController.getAll);
-router.get('/:id', PostController.getOne);
+router.get(
+  '/',
+  pageAndLimitValidation,
+  handleValidationErrors,
+  PostController.all
+);
+router.get(
+  '/feed',
+  checkAuth,
+  pageAndLimitValidation,
+  handleValidationErrors,
+  PostController.feed
+);
+router.get('/:id', PostController.one);
 router.post(
   '/',
   checkAuth,
@@ -38,7 +51,12 @@ router.post(
 );
 
 // Comments
-router.get('/:id/comment', PostCommentController.getAll);
+router.get(
+  '/:id/comment',
+  pageAndLimitValidation,
+  handleValidationErrors,
+  PostCommentController.all
+);
 router.post(
   '/:id/comment',
   checkAuth,

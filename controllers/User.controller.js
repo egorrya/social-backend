@@ -139,32 +139,12 @@ export const getOne = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    UserModel.findOne(
-      {
-        _id: userId,
-      },
-      (err, doc) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({
-            message: 'Unable to get user',
-          });
-        }
+    const user = await UserModel.findById(userId).select('-passwordHash');
 
-        if (!doc) {
-          return res.status(404).json({
-            message: 'User not found',
-          });
-        }
-
-        const { passwordHash, ...userData } = doc._doc;
-
-        res.json({
-          status: 'success',
-          data: userData,
-        });
-      }
-    );
+    await res.json({
+      status: 'success',
+      data: user,
+    });
   } catch (error) {
     res.status(400).json({
       status: 'error',

@@ -1,30 +1,37 @@
 import { body } from 'express-validator';
 
 export const loginValidation = [
-  body('email', 'Неверный формат почты').isEmail(),
-  body('password', 'Пароль должен быть минимум 5 символов').isLength({
+  body('email', 'Not valid email format').isEmail(),
+  body('password', 'Password must be at least 6 characters').isLength({
     min: 5,
   }),
 ];
 
 export const registerValidation = [
-  body('email', 'Неверный формат почты').isEmail(),
-  body('password', 'Пароль должен быть минимум 5 символов').isLength({
+  body('email', 'Not valid email format').isEmail(),
+  body('password', 'Password must be at least 6 characters').isLength({
     min: 5,
   }),
-  body('fullName', 'Укажите имя').isLength({ min: 3 }),
-  body('avatarUrl', 'Неверная ссылка на аватарку').optional().isURL(),
+  body('fullName', 'Your name must be at least 1 character').isLength({
+    min: 1,
+  }),
+  body('avatarUrl', 'Not valid avatar url').optional().isURL(),
 ];
 
 export const postCreateValidation = [
-  body('text', 'Введите текст статьи')
+  body('text', 'Text must be at least 1 to 140 characters')
     .isLength({ min: 1, max: 140 })
     .isString(),
-  body('imageUrl', 'Неверная ссылка на изображение').optional().isString(),
+  body('imageUrl', 'Not valid image url').optional().isString(),
 ];
 
 export const commentCreateValidation = [
-  body('comment', 'Введите текст комментария')
+  body('comment', 'Text must be at least 1 to 140 characters')
     .isLength({ min: 1, max: 140 })
     .isString(),
+];
+
+export const pageAndLimitValidation = [
+  body('limit', 'Limit must be at least 1').optional().isInt({ min: 1 }),
+  body('page', 'Page must be at least 1').optional().isInt({ min: 1 }),
 ];

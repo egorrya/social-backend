@@ -1,7 +1,7 @@
 import PostModel from '../models/Post.model.js';
 import PostCommentModel from '../models/PostComment.model.js';
 
-export const getAll = async (req, res) => {
+export const all = async (req, res) => {
   try {
     const postId = req.params.id;
     const limit = req.body.limit || 20;

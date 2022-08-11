@@ -1,7 +1,50 @@
 import PostLikeModel from '../models/PostLike.model.js';
 import PostModel from '../models/Post.model.js';
+import UserModel from '../models/User.model.js';
 
-export const getAll = async (req, res) => {
+export const feed = async (req, res) => {
+  try {
+    const userId = req.body.id || req.userId;
+    const limit = req.body.limit || 20;
+    const page = req.body.page || 1;
+
+    const user = await UserModel.findById(userId).select('following');
+    const posts = await PostModel.find({ user: { $in: user.following } })
+      .populate({
+        path: 'user',
+        match: {
+          active: true,
+        },
+        select: '-passwordHash',
+      })
+      .limit(limit)
+      .skip(limit * (page - 1))
+      .exec();
+
+    const count = await PostModel.find({
+      user: { $in: user.following },
+    }).count();
+    const lastPage = Math.ceil(count / limit);
+
+    res.json({
+      status: 'success',
+
+      count,
+      page,
+      limit,
+      last_page: lastPage,
+      data: posts,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Unable to get posts',
+    });
+  }
+};
+
+export const all = async (req, res) => {
   try {
     const limit = req.body.limit || 20;
     const page = req.body.page || 1;
@@ -39,7 +82,7 @@ export const getAll = async (req, res) => {
   }
 };
 
-export const getOne = async (req, res) => {
+export const one = async (req, res) => {
   try {
     const postId = req.params.id;
 

@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 
-const PostLikeSchema = new mongoose.Schema(
+const Followers = new mongoose.Schema(
   {
-    post_id: {
+    follower_user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
+      ref: 'User',
       required: true,
     },
     user_id: {
@@ -18,4 +18,4 @@ const PostLikeSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model('PostLike', PostLikeSchema);
+export default mongoose.model('Followers', Followers);
