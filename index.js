@@ -1,16 +1,18 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
 import multer from 'multer';
-import cors from 'cors';
 
 import './core/db.js';
 
 import { checkAuth } from './utils/index.js';
 
 import routes from './routes/index.js';
+
+const port = process.env.PORT || 4444;
 
 const app = express();
 
@@ -39,8 +41,6 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
 });
 
 routes(app);
-
-const port = process.env.PORT || 4444;
 
 app.listen(port, (err) => {
   if (err) {

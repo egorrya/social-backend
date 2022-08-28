@@ -1,5 +1,5 @@
-import PostLikeModel from '../models/PostLike.model.js';
 import PostModel from '../models/Post.model.js';
+import PostLikeModel from '../models/PostLike.model.js';
 import UserModel from '../models/User.model.js';
 
 export const userPosts = async (req, res) => {
@@ -103,6 +103,49 @@ export const all = async (req, res) => {
       .exec();
 
     const count = await PostModel.find().count();
+    const lastPage = Math.ceil(count / limit);
+
+    res.json({
+      status: 'success',
+
+      count,
+      page,
+      limit,
+      last_page: lastPage,
+      data: posts,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Unable to get posts',
+    });
+  }
+};
+
+export const popular = async (req, res) => {
+  try {
+    const likes = req.body.likes || 5;
+    const limit = req.body.limit || 20;
+    const page = req.body.page || 1;
+
+    const posts = await PostModel.find({
+      $expr: { $gte: [{ $size: '$post_likes' }, likes] },
+    })
+      .populate({
+        path: 'user',
+        match: {
+          active: true,
+        },
+        select: '-passwordHash',
+      })
+      .limit(limit)
+      .skip(limit * (page - 1))
+      .exec();
+
+    const count = await PostModel.find({
+      $expr: { $gte: [{ $size: '$post_likes' }, likes] },
+    }).count();
     const lastPage = Math.ceil(count / limit);
 
     res.json({
@@ -274,18 +317,24 @@ export const toggleLike = async (req, res) => {
     const postId = req.params.id;
     const user = req.userId;
 
+    console.log(user._id);
+
     PostLikeModel.findOne({
       post_id: postId,
-      user_id: user._id,
+      user_id: user,
     })
       .then(async (postLike) => {
         if (!postLike) {
           const postLikeDoc = new PostLikeModel({
             post_id: postId,
-            user_id: user._id,
+            user_id: user,
           });
 
+          console.log(postLikeDoc);
+
           const likeData = await postLikeDoc.save();
+
+          console.log(likeData);
 
           await PostModel.updateOne(
             {
@@ -321,7 +370,7 @@ export const toggleLike = async (req, res) => {
         }
       })
       .catch((err) => {
-        res.status(500).json({
+        res.status(400).json({
           status: 'error',
           message: 'Error. Maybe there is no such post',
         });

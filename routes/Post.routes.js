@@ -19,6 +19,12 @@ router.get(
   PostController.all
 );
 router.get(
+  '/popular',
+  pageAndLimitValidation,
+  handleValidationErrors,
+  PostController.popular
+);
+router.get(
   '/feed',
   checkAuth,
   pageAndLimitValidation,
