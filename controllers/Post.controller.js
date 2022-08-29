@@ -317,8 +317,6 @@ export const toggleLike = async (req, res) => {
     const postId = req.params.id;
     const user = req.userId;
 
-    console.log(user._id);
-
     PostLikeModel.findOne({
       post_id: postId,
       user_id: user,
@@ -330,24 +328,25 @@ export const toggleLike = async (req, res) => {
             user_id: user,
           });
 
-          console.log(postLikeDoc);
-
-          const likeData = await postLikeDoc.save();
-
-          console.log(likeData);
+          await postLikeDoc.save();
 
           await PostModel.updateOne(
             {
               _id: postId,
             },
             {
-              $push: { post_likes: likeData._id },
+              $push: { post_likes: user },
             }
           );
+
+          const post = await PostModel.findOne({
+            _id: postId,
+          });
 
           return res.status(200).send({
             status: 'success',
             message: 'Like successfully added',
+            data: post.post_likes,
           });
         } else {
           await PostLikeModel.deleteOne({
@@ -359,13 +358,17 @@ export const toggleLike = async (req, res) => {
               _id: postId,
             },
             {
-              $pull: { post_likes: postLike._id },
+              $pull: { post_likes: user },
             }
           );
 
+          const post = await PostModel.findOne({
+            _id: postId,
+          });
           return res.status(200).send({
             status: 'success',
             message: 'Like successfully removed',
+            data: post.post_likes,
           });
         }
       })
