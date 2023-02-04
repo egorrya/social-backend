@@ -16,28 +16,28 @@ router.get(
   '/',
   pageAndLimitValidation,
   handleValidationErrors,
-  PostController.all
+  PostController.getAll
 );
 router.get(
   '/popular',
   pageAndLimitValidation,
   handleValidationErrors,
-  PostController.popular
+  PostController.getPopular
 );
 router.get(
   '/feed',
   checkAuth,
   pageAndLimitValidation,
   handleValidationErrors,
-  PostController.feed
+  PostController.getAll
 );
 router.get(
   '/user-posts',
   pageAndLimitValidation,
   handleValidationErrors,
-  PostController.userPosts
+  PostController.getUserPosts
 );
-router.get('/:id', PostController.one);
+router.get('/:id', PostController.getOne);
 router.post(
   '/',
   checkAuth,
@@ -67,7 +67,7 @@ router.get(
   '/:id/comment',
   pageAndLimitValidation,
   handleValidationErrors,
-  PostCommentController.all
+  PostCommentController.getAll
 );
 router.post(
   '/:id/comment',

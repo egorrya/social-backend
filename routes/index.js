@@ -1,7 +1,7 @@
 import AuthRoutes from './Auth.routes.js';
+import FollowRoutes from './Follow.routes.js';
 import PostRoutes from './Post.routes.js';
 import UserRoutes from './User.routes.js';
-import FollowRoutes from './Follow.routes.js';
 
 const routes = (app) => {
   app.get('/', (_, res) => {

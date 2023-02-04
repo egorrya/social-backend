@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 import UserModel from '../models/User.model.js';
 
@@ -63,7 +63,7 @@ export const login = async (req, res) => {
     const user = await UserModel.findOne({ email: req.body.email });
 
     if (!user)
-      return res.status(404).json({
+      return res.status(401).json({
         status: 'error',
         message: 'Wrong login or password',
       });
@@ -74,7 +74,7 @@ export const login = async (req, res) => {
     );
 
     if (!isValidPass)
-      return res.status(400).json({
+      return res.status(401).json({
         status: 'error',
         message: 'Wrong login or password',
       });
@@ -199,8 +199,8 @@ export const getMe = async (req, res) => {
 
 export const getAll = async (req, res) => {
   try {
-    const limit = req.body.limit || 20;
-    const page = req.body.page || 1;
+    const limit = req.query.limit || 20;
+    const page = req.query.page || 1;
 
     const users = await UserModel.find()
       .select('-passwordHash')

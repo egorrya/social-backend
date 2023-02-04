@@ -2,11 +2,11 @@ import PostModel from '../models/Post.model.js';
 import PostLikeModel from '../models/PostLike.model.js';
 import UserModel from '../models/User.model.js';
 
-export const userPosts = async (req, res) => {
+export const getUserPosts = async (req, res) => {
   try {
-    const userId = req.body.id;
-    const limit = req.body.limit || 20;
-    const page = req.body.page || 1;
+    const userId = req.query.id;
+    const limit = req.query.limit || 20;
+    const page = req.query.page || 1;
 
     const posts = await PostModel.find({ user: userId })
       .populate({
@@ -43,11 +43,11 @@ export const userPosts = async (req, res) => {
   }
 };
 
-export const feed = async (req, res) => {
+export const getFeed = async (req, res) => {
   try {
     const userId = req.userId;
-    const limit = req.body.limit || 20;
-    const page = req.body.page || 1;
+    const limit = req.query.limit || 20;
+    const page = req.query.page || 1;
 
     const user = await UserModel.findById(userId).select('following');
     const posts = await PostModel.find({ user: { $in: user.following } })
@@ -85,10 +85,10 @@ export const feed = async (req, res) => {
   }
 };
 
-export const all = async (req, res) => {
+export const getAll = async (req, res) => {
   try {
-    const limit = req.body.limit || 20;
-    const page = req.body.page || 1;
+    const limit = req.query.limit || 20;
+    const page = req.query.page || 1;
 
     const posts = await PostModel.find()
       .populate({
@@ -123,11 +123,11 @@ export const all = async (req, res) => {
   }
 };
 
-export const popular = async (req, res) => {
+export const getPopular = async (req, res) => {
   try {
-    const likes = req.body.likes || 5;
-    const limit = req.body.limit || 20;
-    const page = req.body.page || 1;
+    const likes = req.query.likes || 5;
+    const limit = req.query.limit || 20;
+    const page = req.query.page || 1;
 
     const posts = await PostModel.find({
       $expr: { $gte: [{ $size: '$post_likes' }, likes] },
@@ -166,7 +166,7 @@ export const popular = async (req, res) => {
   }
 };
 
-export const one = async (req, res) => {
+export const getOne = async (req, res) => {
   try {
     const postId = req.params.id;
 

@@ -1,6 +1,6 @@
-import UserModel from '../models/User.model.js';
-import FollowingModel from '../models/Following.model.js';
 import FollowersModel from '../models/Followers.model.js';
+import FollowingModel from '../models/Following.model.js';
+import UserModel from '../models/User.model.js';
 
 export const toggleFollow = async (req, res) => {
   try {
@@ -78,11 +78,11 @@ export const toggleFollow = async (req, res) => {
   }
 };
 
-export const followersList = async (req, res) => {
+export const getFollowersList = async (req, res) => {
   try {
-    const userId = req.body.id || req.userId;
-    const limit = req.body.limit || 50;
-    const page = req.body.page || 1;
+    const userId = req.query.id || req.userId;
+    const limit = req.query.limit || 50;
+    const page = req.query.page || 1;
 
     const followers = await FollowersModel.find({ user_id: userId })
       .populate({
@@ -117,11 +117,11 @@ export const followersList = async (req, res) => {
   }
 };
 
-export const followingList = async (req, res) => {
+export const getFollowingList = async (req, res) => {
   try {
-    const userId = req.body.id || req.userId;
-    const limit = req.body.limit || 50;
-    const page = req.body.page || 1;
+    const userId = req.query.id || req.userId;
+    const limit = req.query.limit || 50;
+    const page = req.query.page || 1;
 
     const following = await FollowingModel.find({ user_id: userId })
       .populate({

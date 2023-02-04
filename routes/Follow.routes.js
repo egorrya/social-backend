@@ -12,14 +12,14 @@ router.get(
   checkAuth,
   pageAndLimitValidation,
   handleValidationErrors,
-  FollowController.followersList
+  FollowController.getFollowersList
 );
 router.get(
   '/following',
   checkAuth,
   pageAndLimitValidation,
   handleValidationErrors,
-  FollowController.followingList
+  FollowController.getFollowingList
 );
 
 export default router;
