@@ -1,11 +1,11 @@
 import PostModel from '../models/Post.model.js';
 import PostCommentModel from '../models/PostComment.model.js';
 
-export const all = async (req, res) => {
+export const getAll = async (req, res) => {
   try {
     const postId = req.params.id;
-    const limit = req.body.limit || 20;
-    const page = req.body.page || 1;
+    const limit = req.query.limit || 20;
+    const page = req.query.page || 1;
 
     const comments = await PostCommentModel.find({ post_id: postId })
       .populate({
