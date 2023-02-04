@@ -22,6 +22,13 @@ export const getAll = async (req, res) => {
     const count = await PostCommentModel.find({ post_id: postId }).count();
     const lastPage = Math.ceil(count / limit);
 
+    if (page > lastPage) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Page not found',
+      });
+    }
+
     res.json({
       status: 'success',
 

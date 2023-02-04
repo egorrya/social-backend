@@ -25,6 +25,13 @@ export const getUserPosts = async (req, res) => {
     }).count();
     const lastPage = Math.ceil(count / limit);
 
+    if (page > lastPage) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Page not found',
+      });
+    }
+
     res.json({
       status: 'success',
 
@@ -67,6 +74,13 @@ export const getFeed = async (req, res) => {
     }).count();
     const lastPage = Math.ceil(count / limit);
 
+    if (page > lastPage) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Page not found',
+      });
+    }
+
     res.json({
       status: 'success',
 
@@ -104,6 +118,13 @@ export const getAll = async (req, res) => {
 
     const count = await PostModel.find().count();
     const lastPage = Math.ceil(count / limit);
+
+    if (page > lastPage) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Page not found',
+      });
+    }
 
     res.json({
       status: 'success',
@@ -147,6 +168,15 @@ export const getPopular = async (req, res) => {
       $expr: { $gte: [{ $size: '$post_likes' }, likes] },
     }).count();
     const lastPage = Math.ceil(count / limit);
+
+    if (page > lastPage) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Page not found',
+        count,
+        last_page: lastPage,
+      });
+    }
 
     res.json({
       status: 'success',
