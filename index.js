@@ -8,7 +8,7 @@ import multer from 'multer';
 
 import './core/db.js';
 
-import { checkAuth } from './utils/index.js';
+import { checkAuth } from './middlewares/index.js';
 
 import routes from './routes/index.js';
 

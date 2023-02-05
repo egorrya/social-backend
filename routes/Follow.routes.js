@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import checkAuth from '../utils/checkAuth.js';
-import handleValidationErrors from '../utils/handleValidationErrors.js';
+import checkAuth from '../middlewares/checkAuth.js';
+import handleValidationErrors from '../middlewares/handleValidationErrors.js';
 import { pageAndLimitValidation } from '../validations.js';
 import * as FollowController from './../controllers/Follow.controller.js';
 

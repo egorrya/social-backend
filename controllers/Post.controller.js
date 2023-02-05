@@ -25,7 +25,13 @@ export const getUserPosts = async (req, res) => {
     }).count();
     const lastPage = Math.ceil(count / limit);
 
-    if (page > lastPage) {
+    if (lastPage === 0) {
+      return res.json({
+        status: 'success',
+        data: [],
+        count,
+      });
+    } else if (page > lastPage) {
       return res.status(404).json({
         status: 'error',
         message: 'Page not found',
@@ -74,7 +80,13 @@ export const getFeed = async (req, res) => {
     }).count();
     const lastPage = Math.ceil(count / limit);
 
-    if (page > lastPage) {
+    if (lastPage === 0) {
+      return res.json({
+        status: 'success',
+        data: [],
+        count,
+      });
+    } else if (page > lastPage) {
       return res.status(404).json({
         status: 'error',
         message: 'Page not found',
@@ -101,6 +113,7 @@ export const getFeed = async (req, res) => {
 
 export const getAll = async (req, res) => {
   try {
+    const userId = req.userId;
     const limit = req.query.limit || 20;
     const page = req.query.page || 1;
 
@@ -116,10 +129,24 @@ export const getAll = async (req, res) => {
       .skip(limit * (page - 1))
       .exec();
 
+    const modifiedPosts = posts.map((post) => {
+      if (post.post_likes.length) console.log(post.post_likes);
+
+      const isLiked = post.post_likes.includes(userId);
+
+      return { ...post._doc, isLiked };
+    });
+
     const count = await PostModel.find().count();
     const lastPage = Math.ceil(count / limit);
 
-    if (page > lastPage) {
+    if (lastPage === 0) {
+      return res.json({
+        status: 'success',
+        data: [],
+        count,
+      });
+    } else if (page > lastPage) {
       return res.status(404).json({
         status: 'error',
         message: 'Page not found',
@@ -133,7 +160,7 @@ export const getAll = async (req, res) => {
       page,
       limit,
       last_page: lastPage,
-      data: posts,
+      data: modifiedPosts,
     });
   } catch (err) {
     console.log(err);
@@ -169,12 +196,16 @@ export const getPopular = async (req, res) => {
     }).count();
     const lastPage = Math.ceil(count / limit);
 
-    if (page > lastPage) {
+    if (lastPage === 0) {
+      return res.json({
+        status: 'success',
+        data: [],
+        count,
+      });
+    } else if (page > lastPage) {
       return res.status(404).json({
         status: 'error',
         message: 'Page not found',
-        count,
-        last_page: lastPage,
       });
     }
 

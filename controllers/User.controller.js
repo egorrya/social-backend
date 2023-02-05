@@ -211,7 +211,13 @@ export const getAll = async (req, res) => {
     const count = await UserModel.find().count();
     const lastPage = Math.ceil(count / limit);
 
-    if (page > lastPage) {
+    if (lastPage === 0) {
+      return res.json({
+        status: 'success',
+        data: [],
+        count,
+      });
+    } else if (page > lastPage) {
       return res.status(404).json({
         status: 'error',
         message: 'Page not found',

@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { checkAuth, handleValidationErrors } from '../utils/index.js';
+import {
+  checkAuth,
+  checkAuthWithAccess,
+  handleValidationErrors,
+} from '../middlewares/index.js';
 import {
   commentCreateValidation,
   pageAndLimitValidation,
@@ -14,12 +18,14 @@ const router = Router();
 // Posts
 router.get(
   '/',
+  checkAuthWithAccess,
   pageAndLimitValidation,
   handleValidationErrors,
   PostController.getAll
 );
 router.get(
   '/popular',
+  checkAuthWithAccess,
   pageAndLimitValidation,
   handleValidationErrors,
   PostController.getPopular
@@ -29,10 +35,12 @@ router.get(
   checkAuth,
   pageAndLimitValidation,
   handleValidationErrors,
-  PostController.getAll
+  PostController.getFeed
 );
 router.get(
   '/user-posts',
+  checkAuthWithAccess,
+
   pageAndLimitValidation,
   handleValidationErrors,
   PostController.getUserPosts
