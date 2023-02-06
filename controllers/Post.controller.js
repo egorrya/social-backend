@@ -130,11 +130,8 @@ export const getAll = async (req, res) => {
       .exec();
 
     const modifiedPosts = posts.map((post) => {
-      if (post.post_likes.length) console.log(post.post_likes);
-
       const isLiked = post.post_likes.includes(userId);
-
-      return { ...post._doc, isLiked };
+      return { ...post._doc, isLiked, likesCount: post.post_likes.length };
     });
 
     const count = await PostModel.find().count();
@@ -408,6 +405,8 @@ export const toggleLike = async (req, res) => {
             status: 'success',
             message: 'Like successfully added',
             data: post.post_likes,
+            likesCount: post.post_likes.length,
+            isLiked: true,
           });
         } else {
           await PostLikeModel.deleteOne({
@@ -430,13 +429,15 @@ export const toggleLike = async (req, res) => {
             status: 'success',
             message: 'Like successfully removed',
             data: post.post_likes,
+            likesCount: post.post_likes.length,
+            isLiked: false,
           });
         }
       })
       .catch((err) => {
-        res.status(400).json({
+        res.status(404).json({
           status: 'error',
-          message: 'Error. Maybe there is no such post',
+          message: 'Error. There is no such post',
         });
       });
   } catch (error) {

@@ -12,7 +12,7 @@ import { checkAuth } from './middlewares/index.js';
 
 import routes from './routes/index.js';
 
-const port = process.env.PORT || 4444;
+const port = process.env.PORT || 8080;
 
 const app = express();
 
