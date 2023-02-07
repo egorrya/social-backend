@@ -1,21 +1,23 @@
 import { body, check } from 'express-validator';
-import UserModel from './models/User.model.js';
 
 export const loginValidation = [
   body('email', 'Not valid email format').isEmail(),
   body('password', 'Password must be at least 6 characters').isLength({
-    min: 5,
+    min: 6,
   }),
 ];
 
 export const registerValidation = [
   body('email', 'Not valid email format').isEmail(),
   body('password', 'Password must be at least 6 characters').isLength({
-    min: 5,
+    min: 6,
   }),
-  body('fullName', 'Your name must be at least 1 character').isLength({
-    min: 1,
+  body('username', 'Username must be at least 2 characters').isLength({
+    min: 2,
   }),
+  check('fullName', 'Your name must be at least 2 characters')
+    .optional({ checkFalsy: true })
+    .isLength({ min: 6 }),
   body('avatarUrl', 'Not valid avatar url').optional().isURL(),
   body('backgroundUrl', 'Not valid background url').optional().isURL(),
 ];

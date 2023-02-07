@@ -117,6 +117,9 @@ export const getAll = async (req, res) => {
     const limit = req.query.limit || 20;
     const page = req.query.page || 1;
 
+    const sort = req.query.sort || 'desc';
+    const sortOrder = sort === 'asc' ? 1 : -1;
+
     const posts = await PostModel.find()
       .populate({
         path: 'user',
@@ -127,6 +130,7 @@ export const getAll = async (req, res) => {
       })
       .limit(limit)
       .skip(limit * (page - 1))
+      .sort({ createdAt: sortOrder })
       .exec();
 
     const modifiedPosts = posts.map((post) => {
@@ -154,9 +158,10 @@ export const getAll = async (req, res) => {
       status: 'success',
 
       count,
-      page,
+      page: Number(page),
       limit,
-      last_page: lastPage,
+      sort,
+      last_page: Number(lastPage),
       data: modifiedPosts,
     });
   } catch (err) {
@@ -174,6 +179,9 @@ export const getPopular = async (req, res) => {
     const limit = req.query.limit || 20;
     const page = req.query.page || 1;
 
+    const sort = req.query.sort || 'desc';
+    const sortOrder = sort === 'asc' ? 1 : -1;
+
     const posts = await PostModel.find({
       $expr: { $gte: [{ $size: '$post_likes' }, likes] },
     })
@@ -186,6 +194,7 @@ export const getPopular = async (req, res) => {
       })
       .limit(limit)
       .skip(limit * (page - 1))
+      .sort({ createdAt: sortOrder })
       .exec();
 
     const count = await PostModel.find({
@@ -212,6 +221,7 @@ export const getPopular = async (req, res) => {
       count,
       page,
       limit,
+      sort,
       last_page: lastPage,
       data: posts,
     });
