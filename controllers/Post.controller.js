@@ -135,7 +135,12 @@ export const getAll = async (req, res) => {
 
     const modifiedPosts = posts.map((post) => {
       const isLiked = post.post_likes.includes(userId);
-      return { ...post._doc, isLiked, likesCount: post.post_likes.length };
+      return {
+        ...post._doc,
+        isLiked,
+        likesCount: post.post_likes.length,
+        isOwnPost: post.user._id.toString() === userId,
+      };
     });
 
     const count = await PostModel.find().count();
@@ -315,31 +320,32 @@ export const remove = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const doc = new PostModel({
+    const post = await new PostModel({
       text: req.body.text,
       imageUrl: req.body.imageUrl,
       user: req.userId,
-    });
+    }).save();
 
-    const post = await doc.save().then((post) =>
-      PostModel.findById(post._id).populate({
-        path: 'user',
-        match: {
-          active: true,
-        },
-        select: '-passwordHash',
-      })
-    );
+    const populatedPost = await PostModel.findById(post._id).populate({
+      path: 'user',
+      match: {
+        active: true,
+      },
+      select: '-passwordHash',
+    });
 
     res.json({
       status: 'success',
-      data: post,
+      data: {
+        ...populatedPost.toObject(),
+        likesCount: 0,
+      },
     });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Unable to get posts',
+      message: 'Unable to create post',
     });
   }
 };
@@ -375,7 +381,7 @@ export const update = async (req, res) => {
     console.log(err);
     res.status(500).json({
       status: 'error',
-      message: 'Unable to update posts',
+      message: 'Unable to update post',
     });
   }
 };
