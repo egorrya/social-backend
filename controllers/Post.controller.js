@@ -242,6 +242,7 @@ export const getPopular = async (req, res) => {
 export const getOne = async (req, res) => {
   try {
     const postId = req.params.id;
+    const userId = req.userId;
 
     PostModel.findOne(
       {
@@ -261,9 +262,16 @@ export const getOne = async (req, res) => {
             .json({ status: 'error', message: 'Unable to get post' });
         }
 
+        const isLiked = userId ? doc.post_likes.includes(userId) : false;
+
         res.json({
           status: 'success',
-          data: doc,
+          data: {
+            ...doc._doc,
+            likesCount: doc.post_likes.length,
+            isOwnPost: userId ? doc.user.equals(userId) : false,
+            isLiked,
+          },
         });
       }
     ).populate({

@@ -45,7 +45,7 @@ router.get(
   handleValidationErrors,
   PostController.getUserPosts
 );
-router.get('/:id', PostController.getOne);
+router.get('/:id', checkAuthWithAccess, PostController.getOne);
 router.post(
   '/',
   checkAuth,
