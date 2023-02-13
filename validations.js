@@ -30,7 +30,7 @@ export const postCreateValidation = [
 ];
 
 export const commentCreateValidation = [
-  body('comment', 'Text must be at least 1 to 140 characters')
+  body('text', 'Text must be at least 1 to 140 characters')
     .isLength({ min: 1, max: 140 })
     .isString(),
 ];

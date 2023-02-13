@@ -7,7 +7,7 @@ export const getAll = async (req, res) => {
     const limit = req.query.limit || 20;
     const page = req.query.page || 1;
 
-    const comments = await PostCommentModel.find({ post_id: postId })
+    const comments = await PostCommentModel.find({ post: postId })
       .populate({
         path: 'user',
         match: {
@@ -19,7 +19,7 @@ export const getAll = async (req, res) => {
       .skip(limit * (page - 1))
       .exec();
 
-    const count = await PostCommentModel.find({ post_id: postId }).count();
+    const count = await PostCommentModel.find({ post: postId }).count();
     const lastPage = Math.ceil(count / limit);
 
     if (lastPage === 0) {
@@ -27,6 +27,8 @@ export const getAll = async (req, res) => {
         status: 'success',
         data: [],
         count,
+        page: 1,
+        last_page: 1,
       });
     } else if (page > lastPage) {
       return res.status(404).json({
@@ -58,7 +60,7 @@ export const create = async (req, res) => {
     const postId = req.params.id;
 
     const doc = new PostCommentModel({
-      comment: req.body.comment,
+      text: req.body.text,
       post: postId,
       user: req.userId,
     });

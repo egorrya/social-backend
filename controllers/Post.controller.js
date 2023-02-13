@@ -1,4 +1,5 @@
 import PostModel from '../models/Post.model.js';
+import PostCommentModel from '../models/PostComment.model.js';
 import PostLikeModel from '../models/PostLike.model.js';
 import UserModel from '../models/User.model.js';
 
@@ -135,10 +136,12 @@ export const getAll = async (req, res) => {
 
     const modifiedPosts = posts.map((post) => {
       const isLiked = post.post_likes.includes(userId);
+
       return {
         ...post._doc,
         isLiked,
         likesCount: post.post_likes.length,
+        commentsCount: post.post_comments.length,
         isOwnPost: post.user._id.toString() === userId,
       };
     });
@@ -151,6 +154,8 @@ export const getAll = async (req, res) => {
         status: 'success',
         data: [],
         count,
+        page: 1,
+        last_page: 1,
       });
     } else if (page > lastPage) {
       return res.status(404).json({
@@ -269,6 +274,7 @@ export const getOne = async (req, res) => {
           data: {
             ...doc._doc,
             likesCount: doc.post_likes.length,
+            commentsCount: doc.post_comments.length,
             isOwnPost: userId ? doc.user.equals(userId) : false,
             isLiked,
           },
@@ -302,18 +308,31 @@ export const remove = async (req, res) => {
         if (err) {
           console.log(err);
           return res.status(500).json({
-            message: 'Unable to delete posts',
+            status: 'error',
+            message: 'Unable to delete post',
           });
         }
 
         if (!doc) {
           return res.status(404).json({
+            status: 'error',
             message: 'Unable to get post',
           });
         }
 
-        res.json({
-          status: 'success',
+        // Remove associated comments
+        PostCommentModel.deleteMany({ post_id: postId }, (err) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({
+              status: 'error',
+              message: 'Unable to delete associated comments',
+            });
+          }
+
+          res.json({
+            status: 'success',
+          });
         });
       }
     );
@@ -347,6 +366,7 @@ export const create = async (req, res) => {
       data: {
         ...populatedPost.toObject(),
         likesCount: 0,
+        commentsCount: 0,
       },
     });
   } catch (err) {

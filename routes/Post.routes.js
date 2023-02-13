@@ -72,7 +72,8 @@ router.post(
 
 // Comments
 router.get(
-  '/:id/comment',
+  '/:id/comments',
+  checkAuthWithAccess,
   pageAndLimitValidation,
   handleValidationErrors,
   PostCommentController.getAll
