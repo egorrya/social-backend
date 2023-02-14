@@ -23,28 +23,7 @@ router.get(
 	handleValidationErrors,
 	PostController.getPosts
 );
-// router.get(
-// 	'/popular',
-// 	checkAuthWithAccess,
-// 	pageAndLimitValidation,
-// 	handleValidationErrors,
-// 	PostController.getPopular
-// );
-// router.get(
-// 	'/feed',
-// 	checkAuth,
-// 	pageAndLimitValidation,
-// 	handleValidationErrors,
-// 	PostController.getFeed
-// );
-// router.get(
-// 	'/user-posts',
-// 	checkAuthWithAccess,
 
-// 	pageAndLimitValidation,
-// 	handleValidationErrors,
-// 	PostController.getUserPosts
-// );
 router.get('/:id', checkAuthWithAccess, PostController.getOne);
 router.post(
 	'/',

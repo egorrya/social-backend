@@ -1,5 +1,4 @@
 import PostModel from '../models/Post.model.js';
-import PostCommentModel from '../models/PostComment.model.js';
 import PostLikeModel from '../models/PostLike.model.js';
 import UserModel from '../models/User.model.js';
 
@@ -240,19 +239,8 @@ export const remove = async (req, res) => {
 					});
 				}
 
-				// Remove associated comments
-				PostCommentModel.deleteMany({ post_id: postId }, err => {
-					if (err) {
-						console.log(err);
-						return res.status(500).json({
-							status: 'error',
-							message: 'Unable to delete associated comments',
-						});
-					}
-
-					res.json({
-						status: 'success',
-					});
+				res.json({
+					status: 'success',
 				});
 			}
 		);
