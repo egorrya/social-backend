@@ -74,11 +74,20 @@ export const toggleFollow = async (req, res) => {
 
 export const getFollowersList = async (req, res) => {
 	try {
-		const userId = req.query.id || req.userId;
+		const username = req.query.username;
 		const limit = req.query.limit || 50;
 		const page = req.query.page || 1;
 
-		const followers = await FollowersModel.find({ user_id: userId })
+		const user = await UserModel.findOne({ username });
+
+		if (!user) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'User not found',
+			});
+		}
+
+		const followers = await FollowersModel.find({ user_id: user._id })
 			.populate({
 				path: 'follower_user_id',
 				match: {
@@ -90,16 +99,16 @@ export const getFollowersList = async (req, res) => {
 			.skip(limit * (page - 1))
 			.exec();
 
-		const count = await FollowingModel.find({ user_id: userId }).count();
+		const count = await FollowersModel.find({ user_id: user._id }).count();
 		const lastPage = Math.ceil(count / limit);
 
 		res.json({
 			status: 'success',
 
 			count,
-			page,
-			limit,
-			last_page: lastPage,
+			page: Number(page),
+			limit: Number(limit),
+			last_page: Number(lastPage),
 			data: followers,
 		});
 	} catch (err) {
@@ -113,11 +122,20 @@ export const getFollowersList = async (req, res) => {
 
 export const getFollowingList = async (req, res) => {
 	try {
-		const userId = req.query.id || req.userId;
+		const username = req.query.username;
 		const limit = req.query.limit || 50;
 		const page = req.query.page || 1;
 
-		const following = await FollowingModel.find({ user_id: userId })
+		const user = await UserModel.findOne({ username });
+
+		if (!user) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'User not found',
+			});
+		}
+
+		const following = await FollowingModel.find({ user_id: user._id })
 			.populate({
 				path: 'following_user_id',
 				match: {
@@ -129,16 +147,16 @@ export const getFollowingList = async (req, res) => {
 			.skip(limit * (page - 1))
 			.exec();
 
-		const count = await FollowingModel.find({ user_id: userId }).count();
+		const count = await FollowingModel.find({ user_id: user._id }).count();
 		const lastPage = Math.ceil(count / limit);
 
 		res.json({
 			status: 'success',
 
 			count,
-			page,
-			limit,
-			last_page: lastPage,
+			page: Number(page),
+			limit: Number(limit),
+			last_page: Number(lastPage),
 			data: following,
 		});
 	} catch (err) {

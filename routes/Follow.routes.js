@@ -8,18 +8,16 @@ const router = Router();
 
 router.post('/', checkAuth, FollowController.toggleFollow);
 router.get(
-  '/followers',
-  checkAuth,
-  pageAndLimitValidation,
-  handleValidationErrors,
-  FollowController.getFollowersList
+	'/followers',
+	pageAndLimitValidation,
+	handleValidationErrors,
+	FollowController.getFollowersList
 );
 router.get(
-  '/following',
-  checkAuth,
-  pageAndLimitValidation,
-  handleValidationErrors,
-  FollowController.getFollowingList
+	'/following',
+	pageAndLimitValidation,
+	handleValidationErrors,
+	FollowController.getFollowingList
 );
 
 export default router;
