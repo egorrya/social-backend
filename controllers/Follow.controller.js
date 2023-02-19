@@ -8,7 +8,7 @@ export const toggleFollow = async (req, res) => {
 		const userId = req.userId;
 
 		const follow = await FollowingModel.findOne({
-			following_user_id: followingUserId,
+			target_user: followingUserId,
 			user_id: userId,
 		});
 
@@ -21,20 +21,23 @@ export const toggleFollow = async (req, res) => {
 
 		if (!follow) {
 			await new FollowingModel({
-				following_user_id: followingUserId,
+				target_user: followingUserId,
 				user_id: userId,
 			}).save();
 
 			await new FollowersModel({
-				follower_user_id: userId,
+				target_user: userId,
 				user_id: followingUserId,
 			}).save();
 
-			await UserModel.updateOne({ _id: userId }, { $inc: { following: 1 } });
+			await UserModel.updateOne(
+				{ _id: userId },
+				{ $push: { following: followingUserId } }
+			);
 
 			await UserModel.updateOne(
 				{ _id: followingUserId },
-				{ $inc: { followers: 1 } }
+				{ $push: { followers: userId } }
 			);
 
 			return res.send({
@@ -43,20 +46,23 @@ export const toggleFollow = async (req, res) => {
 			});
 		} else {
 			await FollowersModel.findOneAndDelete({
-				follower_user_id: userId,
+				target_user: userId,
 				user_id: followingUserId,
 			});
 
 			await FollowingModel.findOneAndDelete({
-				following_user_id: followingUserId,
+				target_user: followingUserId,
 				user_id: userId,
 			});
 
-			await UserModel.updateOne({ _id: userId }, { $inc: { following: -1 } });
+			await UserModel.updateOne(
+				{ _id: userId },
+				{ $pull: { following: followingUserId } }
+			);
 
 			await UserModel.updateOne(
 				{ _id: followingUserId },
-				{ $inc: { followers: -1 } }
+				{ $pull: { followers: userId } }
 			);
 
 			return res.send({
@@ -72,35 +78,76 @@ export const toggleFollow = async (req, res) => {
 	}
 };
 
-export const getFollowersList = async (req, res) => {
+export const getFollowList = async (req, res) => {
 	try {
+		const type = req.query.type; // "followers" or "following"
 		const username = req.query.username;
 		const limit = req.query.limit || 50;
 		const page = req.query.page || 1;
+		const user = req.userId;
 
-		const user = await UserModel.findOne({ username });
+		const userData = await UserModel.findOne({ username });
 
-		if (!user) {
+		if (!userData) {
 			return res.status(404).json({
 				status: 'error',
 				message: 'User not found',
 			});
+		} else if (!['followers', 'following'].includes(type)) {
+			return res.status(400).json({
+				status: 'error',
+				message: 'Invalid type',
+			});
 		}
 
-		const followers = await FollowersModel.find({ user_id: user._id })
-			.populate({
-				path: 'follower_user_id',
-				match: {
-					active: true,
-				},
-				select: '-passwordHash',
-			})
-			.limit(limit)
-			.skip(limit * (page - 1))
-			.exec();
+		let data, count;
 
-		const count = await FollowersModel.find({ user_id: user._id }).count();
+		if (type === 'following') {
+			data = await FollowingModel.find({ user_id: userData._id })
+				.populate({
+					path: 'target_user',
+					match: {
+						active: true,
+					},
+					select: '-passwordHash',
+				})
+				.limit(limit)
+				.skip(limit * (page - 1))
+				.exec();
+
+			count = await FollowingModel.find({ user_id: userData._id }).count();
+		} else if (type === 'followers') {
+			data = await FollowersModel.find({ user_id: userData._id })
+				.populate({
+					path: 'target_user',
+					match: {
+						active: true,
+					},
+					select: '-passwordHash',
+				})
+				.limit(limit)
+				.skip(limit * (page - 1))
+				.exec();
+
+			count = await FollowersModel.find({ user_id: userData._id }).count();
+		}
+
 		const lastPage = Math.ceil(count / limit);
+
+		if (lastPage === 0) {
+			return res.json({
+				status: 'success',
+				data: [],
+				count,
+				page: 1,
+				last_page: 1,
+			});
+		} else if (page > lastPage) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'Page not found',
+			});
+		}
 
 		res.json({
 			status: 'success',
@@ -109,61 +156,13 @@ export const getFollowersList = async (req, res) => {
 			page: Number(page),
 			limit: Number(limit),
 			last_page: Number(lastPage),
-			data: followers,
+			data,
 		});
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
 			status: 'error',
-			message: 'Unable to get followers list',
-		});
-	}
-};
-
-export const getFollowingList = async (req, res) => {
-	try {
-		const username = req.query.username;
-		const limit = req.query.limit || 50;
-		const page = req.query.page || 1;
-
-		const user = await UserModel.findOne({ username });
-
-		if (!user) {
-			return res.status(404).json({
-				status: 'error',
-				message: 'User not found',
-			});
-		}
-
-		const following = await FollowingModel.find({ user_id: user._id })
-			.populate({
-				path: 'following_user_id',
-				match: {
-					active: true,
-				},
-				select: '-passwordHash',
-			})
-			.limit(limit)
-			.skip(limit * (page - 1))
-			.exec();
-
-		const count = await FollowingModel.find({ user_id: user._id }).count();
-		const lastPage = Math.ceil(count / limit);
-
-		res.json({
-			status: 'success',
-
-			count,
-			page: Number(page),
-			limit: Number(limit),
-			last_page: Number(lastPage),
-			data: following,
-		});
-	} catch (err) {
-		console.log(err);
-		res.status(500).json({
-			status: 'error',
-			message: 'Unable to get following list',
+			message: 'Unable to get list',
 		});
 	}
 };

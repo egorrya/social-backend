@@ -35,8 +35,8 @@ export const register = async (req, res) => {
 
 			email,
 			passwordHash: hash,
-			followers: 0,
-			following: 0,
+			followers: [],
+			following: [],
 		});
 
 		const user = await doc.save();

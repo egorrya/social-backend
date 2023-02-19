@@ -22,8 +22,8 @@ const UserSchema = new mongoose.Schema(
 		},
 		avatarUrl: String,
 		backgroundUrl: String,
-		following: Number,
-		followers: Number,
+		following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Following' }],
+		followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Followers' }],
 	},
 	{
 		timestamps: true,

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import checkAuth from '../middlewares/checkAuth.js';
+import checkAuthWithAccess from '../middlewares/checkAuthWithAccess.js';
 import handleValidationErrors from '../middlewares/handleValidationErrors.js';
 import { pageAndLimitValidation } from '../validations.js';
 import * as FollowController from './../controllers/Follow.controller.js';
@@ -8,16 +9,11 @@ const router = Router();
 
 router.post('/', checkAuth, FollowController.toggleFollow);
 router.get(
-	'/followers',
+	'/',
+	checkAuthWithAccess,
 	pageAndLimitValidation,
 	handleValidationErrors,
-	FollowController.getFollowersList
-);
-router.get(
-	'/following',
-	pageAndLimitValidation,
-	handleValidationErrors,
-	FollowController.getFollowingList
+	FollowController.getFollowList
 );
 
 export default router;
