@@ -4,7 +4,7 @@ import UserModel from '../models/User.model.js';
 
 export const toggleFollow = async (req, res) => {
 	try {
-		const followingUserId = req.query.id;
+		const followingUserId = req.body.id;
 		const userId = req.userId;
 
 		const follow = await FollowingModel.findOne({
@@ -84,7 +84,6 @@ export const getFollowList = async (req, res) => {
 		const username = req.query.username;
 		const limit = req.query.limit || 50;
 		const page = req.query.page || 1;
-		const user = req.userId;
 
 		const userData = await UserModel.findOne({ username });
 

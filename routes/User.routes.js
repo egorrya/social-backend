@@ -7,18 +7,18 @@ import * as UserController from './../controllers/User.controller.js';
 const router = Router();
 
 router.get(
-  '/',
-  checkAuth,
-  pageAndLimitValidation,
-  handleValidationErrors,
-  UserController.getAll
+	'/',
+	checkAuth,
+	pageAndLimitValidation,
+	handleValidationErrors,
+	UserController.getAll
 );
-router.get('/:id', checkAuth, UserController.getOne);
+router.get('/:username', checkAuth, UserController.getOne);
 router.post(
-  '/changeProfile',
-  registerValidation,
-  checkAuth,
-  UserController.changeProfile
+	'/changeProfile',
+	registerValidation,
+	checkAuth,
+	UserController.changeProfile
 );
 
 export default router;

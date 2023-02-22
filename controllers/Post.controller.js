@@ -74,7 +74,9 @@ export const getPosts = async (req, res) => {
 				});
 			} else {
 				const user = await UserModel.findById(userId).select('following');
-				posts = await PostModel.find({ user: { $in: user.following } })
+				posts = await PostModel.find({
+					user: { $in: [...user.following, userId] },
+				})
 					.populate({
 						path: 'user',
 						match: {
@@ -115,7 +117,7 @@ export const getPosts = async (req, res) => {
 			}).count();
 		}
 
-		const modifiedPosts = posts.map(post => {
+		const modifiedPosts = posts.map((post) => {
 			const isLiked = post.post_likes.includes(userId);
 
 			return {
@@ -331,7 +333,7 @@ export const toggleLike = async (req, res) => {
 			post_id: postId,
 			user_id: user,
 		})
-			.then(async postLike => {
+			.then(async (postLike) => {
 				if (!postLike) {
 					const postLikeDoc = new PostLikeModel({
 						post_id: postId,
@@ -386,7 +388,7 @@ export const toggleLike = async (req, res) => {
 					});
 				}
 			})
-			.catch(err => {
+			.catch((err) => {
 				res.status(404).json({
 					status: 'error',
 					message: 'Error. There is no such post',

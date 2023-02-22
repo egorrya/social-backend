@@ -245,9 +245,16 @@ export const getAll = async (req, res) => {
 
 export const getOne = async (req, res) => {
 	try {
-		const userId = req.params.id;
+		const username = req.params.username;
 
-		const user = await UserModel.findById(userId).select('-passwordHash');
+		const user = await UserModel.findOne({ username }).select('-passwordHash');
+
+		if (!user) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'User not found',
+			});
+		}
 
 		await res.json({
 			status: 'success',
