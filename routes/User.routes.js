@@ -13,7 +13,7 @@ router.get(
 	handleValidationErrors,
 	UserController.getAll
 );
-router.get('/:username', checkAuth, UserController.getOne);
+router.get('/:username', UserController.getOne);
 router.post(
 	'/changeProfile',
 	registerValidation,
