@@ -11,15 +11,18 @@ export const getPosts = async (req, res) => {
 		const limit = req.query.limit || 20;
 		const page = req.query.page || 1;
 		const likes = req.query.likes || 5; // popular
+		const before = req.query.before ? new Date(req.query.before) : new Date();
 
 		const sort = req.query.sort || 'desc';
 		const sortOrder = sort === 'asc' ? 1 : -1;
 
 		let posts, count;
 
+		const baseConditions = { createdAt: { $lt: before } };
+
 		// all posts
 		if (filter === 'all') {
-			posts = await PostModel.find()
+			posts = await PostModel.find(baseConditions)
 				.populate({
 					path: 'user',
 					match: {
@@ -32,7 +35,7 @@ export const getPosts = async (req, res) => {
 				.sort({ createdAt: sortOrder })
 				.exec();
 
-			count = await PostModel.find().count();
+			count = await PostModel.find(baseConditions).count();
 
 			// specific user posts
 		} else if (filter === 'user_posts') {
@@ -45,7 +48,7 @@ export const getPosts = async (req, res) => {
 			} else {
 				const user = await UserModel.findOne({ username });
 
-				posts = await PostModel.find({ user: user._id })
+				posts = await PostModel.find({ ...baseConditions, user: user._id })
 					.populate({
 						path: 'user',
 						match: {
@@ -60,6 +63,7 @@ export const getPosts = async (req, res) => {
 					.exec();
 
 				count = await PostModel.find({
+					...baseConditions,
 					user: user._id,
 				}).count();
 			}
@@ -75,6 +79,7 @@ export const getPosts = async (req, res) => {
 			} else {
 				const user = await UserModel.findById(userId).select('following');
 				posts = await PostModel.find({
+					...baseConditions,
 					user: { $in: [...user.following, userId] },
 				})
 					.populate({
@@ -91,6 +96,7 @@ export const getPosts = async (req, res) => {
 					.exec();
 
 				count = await PostModel.find({
+					...baseConditions,
 					user: { $in: user.following },
 				}).count();
 			}
@@ -98,6 +104,7 @@ export const getPosts = async (req, res) => {
 			// popular
 		} else if (filter === 'popular') {
 			posts = await PostModel.find({
+				...baseConditions,
 				$expr: { $gte: [{ $size: '$post_likes' }, likes] },
 			})
 				.populate({
@@ -111,8 +118,8 @@ export const getPosts = async (req, res) => {
 				.skip(limit * (page - 1))
 				.sort({ createdAt: sortOrder })
 				.exec();
-
 			count = await PostModel.find({
+				...baseConditions,
 				$expr: { $gte: [{ $size: '$post_likes' }, likes] },
 			}).count();
 		}
@@ -148,7 +155,6 @@ export const getPosts = async (req, res) => {
 
 		res.json({
 			status: 'success',
-
 			count: Number(count),
 			page: Number(page),
 			limit: Number(limit),
