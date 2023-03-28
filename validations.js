@@ -1,41 +1,47 @@
 import { body, check } from 'express-validator';
 
 export const loginValidation = [
-  body('email', 'Not valid email format').isEmail(),
-  body('password', 'Password must be at least 6 characters').isLength({
-    min: 6,
-  }),
+	body('email', 'Not valid email format').isEmail(),
+	body('password', 'Password must be at least 6 characters').isLength({
+		min: 6,
+	}),
 ];
 
 export const registerValidation = [
-  body('email', 'Not valid email format').isEmail(),
-  body('password', 'Password must be at least 6 characters').isLength({
-    min: 6,
-  }),
-  body('username', 'Username must be at least 2 characters').isLength({
-    min: 2,
-  }),
-  check('fullName', 'Your name must be at least 2 characters')
-    .optional({ checkFalsy: true })
-    .isLength({ min: 6 }),
-  body('avatarUrl', 'Not valid avatar url').optional().isURL(),
-  body('backgroundUrl', 'Not valid background url').optional().isURL(),
+	body('email', 'Not valid email format').isEmail(),
+	body('password', 'Password must be at least 6 characters').isLength({
+		min: 6,
+	}),
+	body('username', 'Username must be at least 2 characters').isLength({
+		min: 2,
+	}),
+	check('fullName', 'Your name must be at least 2 characters')
+		.optional({ checkFalsy: true })
+		.isLength({ min: 6 }),
+	body('avatarUrl', 'Not valid avatar url').optional().isURL(),
+	body('backgroundUrl', 'Not valid background url').optional().isURL(),
 ];
 
 export const postCreateValidation = [
-  body('text', 'Text must be at least 1 to 140 characters')
-    .isLength({ min: 1, max: 140 })
-    .isString(),
-  body('imageUrl', 'Not valid image url').optional().isString(),
+	body('text', 'Text must be at least 1 to 140 characters')
+		.isString()
+		.isLength({ min: 1, max: 140 })
+		.optional({ checkFalsy: true }),
+	body('imageUrl', 'Not valid image url').optional().isString(),
+	body().custom((value, { req }) => {
+		if (!req.body.text && !req.file && !req.body.imageUrl) {
+			throw new Error('At least one of text or image is required');
+		}
+		return true;
+	}),
 ];
-
 export const commentCreateValidation = [
-  body('text', 'Text must be at least 1 to 140 characters')
-    .isLength({ min: 1, max: 140 })
-    .isString(),
+	body('text', 'Text must be at least 1 to 140 characters')
+		.isLength({ min: 1, max: 140 })
+		.isString(),
 ];
 
 export const pageAndLimitValidation = [
-  body('limit', 'Limit must be at least 1').optional().isInt({ min: 1 }),
-  body('page', 'Page must be at least 1').optional().isInt({ min: 1 }),
+	body('limit', 'Limit must be at least 1').optional().isInt({ min: 1 }),
+	body('page', 'Page must be at least 1').optional().isInt({ min: 1 }),
 ];

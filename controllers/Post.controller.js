@@ -1,3 +1,7 @@
+import fs from 'fs/promises';
+
+import uploadToCloudinary from '../utils/uploadToCloudinary.js';
+
 import PostModel from '../models/Post.model.js';
 import PostLikeModel from '../models/PostLike.model.js';
 import UserModel from '../models/User.model.js';
@@ -227,45 +231,47 @@ export const remove = async (req, res) => {
 	try {
 		const postId = req.params.id;
 
-		PostModel.findOneAndDelete(
-			{
-				_id: postId,
-			},
-			(err, doc) => {
-				if (err) {
-					console.log(err);
-					return res.status(500).json({
-						status: 'error',
-						message: 'Unable to delete post',
-					});
-				}
+		const post = await PostModel.findById(postId);
 
-				if (!doc) {
-					return res.status(404).json({
-						status: 'error',
-						message: 'Unable to get post',
-					});
-				}
+		if (!post) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'Unable to get post',
+			});
+		}
 
-				res.json({
-					status: 'success',
-				});
-			}
-		);
+		if (post.imageUrl) {
+			const publicId = post.imageUrl.split('/').pop().split('.')[0];
+			await cloudinary.v2.uploader.destroy(publicId);
+		}
+
+		await PostModel.findByIdAndDelete(postId);
+
+		res.json({
+			status: 'success',
+		});
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
 			status: 'error',
-			message: 'Unable to get posts',
+			message: 'Unable to delete post',
 		});
 	}
 };
 
 export const create = async (req, res) => {
 	try {
+		let imageUrl = req.body.imageUrl;
+
+		if (req.file) {
+			const result = await uploadToCloudinary(req.file.path);
+			await fs.unlink(req.file.path);
+			imageUrl = result.secure_url;
+		}
+
 		const post = await new PostModel({
+			imageUrl,
 			text: req.body.text,
-			imageUrl: req.body.imageUrl,
 			user: req.userId,
 		}).save();
 
@@ -277,6 +283,7 @@ export const create = async (req, res) => {
 			select: '-passwordHash',
 		});
 
+		// TODO: add likes and comments count into post model
 		res.json({
 			status: 'success',
 			data: {
@@ -298,28 +305,42 @@ export const update = async (req, res) => {
 	try {
 		const postId = req.params.id;
 
-		await PostModel.updateOne(
-			{
-				_id: postId,
-			},
-			{
-				text: req.body.text,
-				imageUrl: req.body.imageUrl,
-				user: req.userId,
-			}
-		);
+		const post = await PostModel.findById(postId);
 
-		const post = await PostModel.findById(postId).populate({
+		if (!post) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'Unable to get post',
+			});
+		}
+
+		let imageUrl = req.body.imageUrl;
+
+		if (req.file) {
+			const result = await uploadToCloudinary(req.file.path);
+			await fs.unlink(req.file.path);
+			imageUrl = result.secure_url;
+
+			if (post.imageUrl) {
+				const publicId = post.imageUrl.split('/').pop().split('.')[0];
+				await cloudinary.v2.uploader.destroy(publicId);
+			}
+		}
+
+		post.text = req.body.text;
+		post.imageUrl = imageUrl;
+		post.user = req.userId;
+		await post.save();
+
+		const updatedPost = await PostModel.findById(postId).populate({
 			path: 'user',
-			match: {
-				active: true,
-			},
+			match: { active: true },
 			select: '-passwordHash',
 		});
 
 		res.json({
 			status: 'success',
-			data: post,
+			data: updatedPost,
 		});
 	} catch (err) {
 		console.log(err);

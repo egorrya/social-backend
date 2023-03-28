@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import multer from 'multer';
+
 import {
 	checkAuth,
 	checkAuthWithAccess,
@@ -14,6 +16,7 @@ import * as PostController from './../controllers/Post.controller.js';
 import * as PostCommentController from './../controllers/PostComment.controller.js';
 
 const router = Router();
+const upload = multer({ dest: 'uploads/' });
 
 // Posts
 router.get(
@@ -28,6 +31,7 @@ router.get('/:id', checkAuthWithAccess, PostController.getOne);
 router.post(
 	'/',
 	checkAuth,
+	upload.single('image'),
 	postCreateValidation,
 	handleValidationErrors,
 	PostController.create
@@ -36,6 +40,7 @@ router.delete('/:id', checkAuth, PostController.remove);
 router.patch(
 	'/:id',
 	checkAuth,
+	upload.single('image'),
 	postCreateValidation,
 	handleValidationErrors,
 	PostController.update

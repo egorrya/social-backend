@@ -10,7 +10,12 @@ export const getAll = async (req, res) => {
 		const sort = req.query.sort || 'desc';
 		const sortOrder = sort === 'asc' ? 1 : -1;
 
-		const comments = await PostCommentModel.find({ post: postId })
+		const before = req.query.before || null;
+		const query = before
+			? { post: postId, createdAt: { $lt: before } }
+			: { post: postId };
+
+		const comments = await PostCommentModel.find(query)
 			.populate({
 				path: 'user',
 				match: {
@@ -71,7 +76,7 @@ export const create = async (req, res) => {
 			user: req.userId,
 		});
 
-		const comment = await doc.save().then(comment =>
+		const comment = await doc.save().then((comment) =>
 			PostCommentModel.findById(comment._id).populate({
 				path: 'user',
 				match: {
