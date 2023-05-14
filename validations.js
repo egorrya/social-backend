@@ -25,7 +25,7 @@ export const registerValidation = [
 export const postCreateValidation = [
 	body('text', 'Text must be at least 1 to 140 characters')
 		.isString()
-		.isLength({ min: 1, max: 140 })
+		.isLength({ max: 140 })
 		.optional({ checkFalsy: true }),
 	body('imageUrl', 'Not valid image url').optional().isString(),
 	body().custom((value, { req }) => {

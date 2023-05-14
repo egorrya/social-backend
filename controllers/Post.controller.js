@@ -1,3 +1,4 @@
+import cloudinary from 'cloudinary';
 import fs from 'fs/promises';
 
 import uploadToCloudinary from '../utils/uploadToCloudinary.js';
@@ -74,7 +75,6 @@ export const getPosts = async (req, res) => {
 
 			// feed
 		} else if (filter === 'feed') {
-			// if user is not logged in, return error
 			if (!userId) {
 				return res.status(400).json({
 					status: 'error',
@@ -82,10 +82,20 @@ export const getPosts = async (req, res) => {
 				});
 			} else {
 				const user = await UserModel.findById(userId).select('following');
-				posts = await PostModel.find({
+				let conditions = {
 					...baseConditions,
 					user: { $in: [...user.following, userId] },
-				})
+				};
+
+				// If the user isn't following anyone, only query their own posts
+				if (user.following.length === 0) {
+					conditions = {
+						...baseConditions,
+						user: userId,
+					};
+				}
+
+				posts = await PostModel.find(conditions)
 					.populate({
 						path: 'user',
 						match: {
@@ -96,13 +106,9 @@ export const getPosts = async (req, res) => {
 					.limit(limit)
 					.skip(limit * (page - 1))
 					.sort({ createdAt: sortOrder })
-
 					.exec();
 
-				count = await PostModel.find({
-					...baseConditions,
-					user: { $in: user.following },
-				}).count();
+				count = await PostModel.find(conditions).count();
 			}
 
 			// popular
@@ -283,7 +289,6 @@ export const create = async (req, res) => {
 			select: '-passwordHash',
 		});
 
-		// TODO: add likes and comments count into post model
 		res.json({
 			status: 'success',
 			data: {
