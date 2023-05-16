@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import AuthRoutes from './Auth.routes.js';
-import UploadRoutes from './File.routes.js';
 import FollowRoutes from './Follow.routes.js';
 import PostRoutes from './Post.routes.js';
 import UserRoutes from './User.routes.js';
@@ -18,6 +17,5 @@ routes.use('/auth', AuthRoutes);
 routes.use('/posts', PostRoutes);
 routes.use('/users', UserRoutes);
 routes.use('/follow', FollowRoutes);
-routes.use('/file', UploadRoutes);
 
 export default routes;
