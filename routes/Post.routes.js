@@ -16,7 +16,7 @@ import * as PostController from './../controllers/Post.controller.js';
 import * as PostCommentController from './../controllers/PostComment.controller.js';
 
 const router = Router();
-const upload = multer({ dest: 'tmp/' });
+const upload = multer({ dest: '/tmp/' });
 
 // Posts
 router.get(
