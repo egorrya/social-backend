@@ -1,21 +1,23 @@
+import { Router } from 'express';
+
 import AuthRoutes from './Auth.routes.js';
 import UploadRoutes from './File.routes.js';
 import FollowRoutes from './Follow.routes.js';
 import PostRoutes from './Post.routes.js';
 import UserRoutes from './User.routes.js';
 
-const routes = (app) => {
-	app.get('/', (_, res) => {
-		res.send({
-			message: 'Welcome, Space Cowboy!',
-		});
-	});
+const routes = Router();
 
-	app.use('/auth', AuthRoutes);
-	app.use('/posts', PostRoutes);
-	app.use('/users', UserRoutes);
-	app.use('/follow', FollowRoutes);
-	app.use('/file', UploadRoutes);
-};
+routes.get('/', (_, res) => {
+	res.send({
+		message: 'Welcome, Space Cowboy!',
+	});
+});
+
+routes.use('/auth', AuthRoutes);
+routes.use('/posts', PostRoutes);
+routes.use('/users', UserRoutes);
+routes.use('/follow', FollowRoutes);
+routes.use('/file', UploadRoutes);
 
 export default routes;

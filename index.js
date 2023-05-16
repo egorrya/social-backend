@@ -23,7 +23,7 @@ cloudinary.config({
 	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-routes(app);
+app.use('/api/v1', routes);
 
 app.listen(port, (err) => {
 	if (err) {
